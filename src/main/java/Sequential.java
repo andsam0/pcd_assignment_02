@@ -38,7 +38,10 @@ public class Sequential {
     }
 
     public static void main(String[] args){
-        getFSReport("./", 100000, 10);
+        long start = System.currentTimeMillis();
+        getFSReport(args[0], Long.parseLong(args[1]), Integer.parseInt(args[2]));
+        long end = System.currentTimeMillis();
+        System.out.println(end-start);
     }
 
 }

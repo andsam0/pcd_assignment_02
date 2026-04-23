@@ -12,5 +12,5 @@ dependencies {
 }
 
 application {
-    mainClass = "FSStatExample"
+    mainClass = "Sequential"
 }
