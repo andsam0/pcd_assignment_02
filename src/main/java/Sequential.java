@@ -5,18 +5,17 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 
 public class Sequential {
-    static public void getFSReport(String directory, long maxFileSize, int numberOfBands) {
-        Report report = new AtomicReport(numberOfBands);
+    static public void getFSReport(String directory, long maxFS, int bands) {
+        Report report = new AtomicReport(bands);
         Path path = Path.of(directory);
         List<Long> allSize;
         try (Stream<Path> stream = Files.walk(path)) {
             allSize = stream
-                    .filter(Files::isRegularFile)
+                    .filter(Files::isRegularFile) // skip symlinks and directories
                     .map(p -> {
                         try {
                             return Files.size(p);
@@ -30,11 +29,21 @@ public class Sequential {
         }
 
         for (Long size : allSize) {
-            OptionalInt band = size > maxFileSize ? OptionalInt.empty() : OptionalInt.of((int) (size * numberOfBands / maxFileSize));
+            OptionalInt band = size > maxFS ? OptionalInt.empty() : OptionalInt.of((int) (size * bands / maxFS));
             report.incrementNumberOfFiles(band);
         }
-        System.out.println("Number of files: " + report.getNumberOfFile());
-        System.out.println("List of sizes: " + report.getBands().stream().toList());
+
+        System.out.println("Total files: " + report.numFiles());
+        for (int i = 0; i < (long) bands; i++) {
+            long lo = i * maxFS / (long) bands;
+            long hi = (i + 1) * maxFS / (long) bands;
+            System.out.printf("Band %d [%d, %d): %d files%n",
+                    i, lo, hi, report.numFilesPerBand().get(i));
+        }
+        System.out.printf("Overflow (>= %d): %d files%n",
+                maxFS, report.numFiles() - report.numFilesPerBand().subList(0, (int) ((long) bands -1)).stream().mapToLong(Long::longValue).sum());
+//        System.out.println("Number of files: " + report.getNumberOfFile());
+//        System.out.println("List of sizes: " + report.getBands().stream().toList());
     }
 
     public static void main(String[] args){

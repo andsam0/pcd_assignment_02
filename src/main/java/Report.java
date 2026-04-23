@@ -3,9 +3,9 @@ import java.util.OptionalInt;
 
 public interface Report {
 
-    List<Long> getBands();
+    List<Long> numFilesPerBand();
 
-    long getNumberOfFile();
+    long numFiles();
 
     void incrementNumberOfFiles(OptionalInt bandNumber);
 }

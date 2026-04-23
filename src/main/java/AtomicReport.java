@@ -16,12 +16,12 @@ public class AtomicReport implements Report {
     }
 
     @Override
-    public List<Long> getBands(){
+    public List<Long> numFilesPerBand(){
         return bands.stream().map(AtomicLong::get).toList();
     }
 
     @Override
-    public long getNumberOfFile() {
+    public long numFiles() {
         return numberOfFile.get();
     }
 
