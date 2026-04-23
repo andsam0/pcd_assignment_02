@@ -13,7 +13,7 @@ public class FSStatExample {
         long maxFS = Long.parseLong(args[1]);
         int NB = Integer.parseInt(args[2]);
 
-        ReportResult result = new FSStat().getFSReport(folder, maxFS, NB);
+        ReportResult result = new FSStat().getFSReport(folder, maxFS, NB).blockingGet();
 
         System.out.println("Total files: " + result.numFiles());
         for (int i = 0; i < NB; i++) {

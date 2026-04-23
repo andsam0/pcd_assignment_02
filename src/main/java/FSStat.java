@@ -9,16 +9,14 @@ import java.io.File;
 
 public class FSStat {
 
-    public ReportResult getFSReport(File dir, long maxFS, int NB) {
-        List<Long> bands = walkFiles(dir)
+    public Single<ReportResult> getFSReport(File dir, long maxFS, int NB) {
+        return walkFiles(dir)
                 .subscribeOn(Schedulers.io())
                 .map(file -> bandIndex(file.length(), maxFS, NB))
                 .collect(
                         () -> new ArrayList<>(Collections.nCopies(NB + 1, 0L)),
                         (list, idx) -> list.set(idx, list.get(idx) + 1)
-                ).blockingGet();
-        long total = bands.stream().mapToLong(Long::longValue).sum();
-        return new ReportResult(total, bands);
+                ).map(bands -> new ReportResult(bands.stream().mapToLong(Long::longValue).sum(), bands));
     }
 
     private Observable<File> walkFiles(File entry) {
