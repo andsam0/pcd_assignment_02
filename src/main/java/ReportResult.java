@@ -1,3 +1,3 @@
 import java.util.List;
 
-public record ReportResult(int numFiles, List<Long> numFilesPerBand) {}
+public record ReportResult(long numFiles, List<Long> numFilesPerBand) {}
