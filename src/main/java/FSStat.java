@@ -1,17 +1,20 @@
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
-import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.io.File;
 
 public class FSStat {
 
+    private final Scheduler scheduler = Schedulers.computation();
+
     public Single<ReportResult> getFSReport(File dir, long maxFS, int NB) {
         return walkFiles(dir)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(this.scheduler)
                 .map(file -> bandIndex(file.length(), maxFS, NB))
                 .collect(
                         () -> new ArrayList<>(Collections.nCopies(NB + 1, 0L)),
@@ -28,7 +31,7 @@ public class FSStat {
         if (children == null)
             return Observable.empty(); // see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html#listFiles()
         return Observable.fromArray(children)
-                .flatMap(x -> walkFiles(x).subscribeOn(Schedulers.io()));
+                .flatMap(x -> walkFiles(x).subscribeOn(this.scheduler));
     }
 
     private int bandIndex(long size, long maxFS, int NB) {

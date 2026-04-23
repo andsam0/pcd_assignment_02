@@ -13,6 +13,7 @@ public class FSStatExample {
         long maxFS = Long.parseLong(args[1]);
         int NB = Integer.parseInt(args[2]);
 
+        long start = System.currentTimeMillis();
         ReportResult result = new FSStat().getFSReport(folder, maxFS, NB).blockingGet();
 
         System.out.println("Total files: " + result.numFiles());
@@ -24,5 +25,8 @@ public class FSStatExample {
         }
         System.out.printf("Overflow (>= %d): %d files%n",
                 maxFS, result.numFilesPerBand().get(NB));
+
+        long end = System.currentTimeMillis();
+        System.out.println(end-start);
         }
 }
