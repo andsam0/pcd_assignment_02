@@ -1,3 +1,4 @@
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -24,6 +25,7 @@ public class FSStat {
 
     private Observable<File> walkFiles(File entry) {
 //        System.out.println(Thread.currentThread().getName());
+        if (Files.isSymbolicLink(entry.toPath())) return Observable.empty();
         if (entry.isFile()) {
             return Observable.just(entry);
         }
