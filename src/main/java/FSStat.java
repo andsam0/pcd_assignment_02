@@ -11,7 +11,7 @@ import java.io.File;
 
 public class FSStat {
 
-    private final Scheduler scheduler = Schedulers.computation();
+    private final Scheduler scheduler = Schedulers.computation(); // io() in compiti pesanti produce troppi thread
 
     public Single<ReportResult> getFSReport(File dir, long maxFS, int NB) {
         return walkFiles(dir)
