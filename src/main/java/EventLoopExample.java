@@ -1,28 +1,26 @@
-import io.vertx.core.Vertx;
-import io.vertx.core.file.FileSystem;
-
 public class EventLoopExample {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
+        String directory = args[0];
+        long maxFS = Long.parseLong(args[1]);
+        long bands = Long.parseLong(args[2]);
+
         long start = System.currentTimeMillis();
         EventLoop eventLoop = new EventLoop();
-        eventLoop.getFSReport(args[0], Long.parseLong(args[1]), Integer.parseInt(args[2]));
+        eventLoop.getFSReport(directory, maxFS, (int) bands).onComplete(asyncResult -> {
+            ReportResult report = asyncResult.result();
 
-        for (Long size : allSize) {
-            report.incrementNumberOfFiles(bandIndex(size, maxFS, bands));
-        }
-
-        System.out.println("Total files: " + report.numFiles());
-        for (int i = 0; i < (long) bands; i++) {
-            long lo = i * maxFS / (long) bands;
-            long hi = (i + 1) * maxFS / (long) bands;
-            System.out.printf("Band %d [%d, %d): %d files%n",
-                    i, lo, hi, report.numFilesPerBand().get(i));
-        }
-        System.out.printf("Overflow (>= %d): %d files%n",
-                maxFS, report.numFiles() - report.numFilesPerBand().subList(0, (int) ((long) bands -1)).stream().mapToLong(Long::longValue).sum());
-
-        long end = System.currentTimeMillis();
-        System.out.println(end-start);
+            System.out.println("Total files: " + report.numFiles());
+            for (int i = 0; i < bands; i++) {
+                long lo = i * maxFS / bands;
+                long hi = (i + 1) * maxFS / bands;
+                System.out.printf("Band %d [%d, %d): %d files%n",
+                        i, lo, hi, report.bands().get(i));
+            }
+            System.out.printf("Overflow (>= %d): %d files%n",
+                    maxFS, report.numFiles() - report.bands().subList(0, (int) (bands - 1)).stream().mapToLong(Long::longValue).sum());
+            long end = System.currentTimeMillis();
+            System.out.println(end - start);
+        });
     }
 }
