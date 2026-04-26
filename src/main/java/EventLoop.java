@@ -19,7 +19,8 @@ public class EventLoop {
     }
 
     private Future<ReportResult> calculateBands(long maxFS, int NB, String p) {
-        if (Files.isRegularFile(Path.of(p))) {
+        Path path = Path.of(p);
+        if (Files.isRegularFile(path)) {
             return fs.props(p).compose(props -> {
                 long size = props.size();
                 int band = bandIndex(size, maxFS, NB);
@@ -27,7 +28,7 @@ public class EventLoop {
                 bands.set(band, 1L);
                 return Future.succeededFuture(new ReportResult(bands, 1));
             });
-        } else {
+        } else if (Files.isDirectory(path)) {
             return fs.readDir(p).compose(files -> {
                 List<Future<ReportResult>> futureResults = new ArrayList<>();
                 for (String file : files) {
@@ -37,16 +38,21 @@ public class EventLoop {
                         .map(cf -> cf.<ReportResult>list().stream()
                                 .filter(Objects::nonNull)
                                 .reduce(
-                                        ReportResult.emptyResult(NB),
+                                        ReportResult.emptyResult(NB + 1),
                                         ReportResult::merge
                                 )
                         );
             });
         }
+        return Future.succeededFuture(ReportResult.emptyResult(NB + 1));
     }
 
     private int bandIndex(long size, long maxFS, int NB) {
         if (size >= maxFS) return NB;
         return (int) (size * NB / maxFS);
+    }
+
+    public void close() {
+        vertx.close();
     }
 }

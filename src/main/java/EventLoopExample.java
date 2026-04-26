@@ -21,6 +21,8 @@ public class EventLoopExample {
                     maxFS, report.numFiles() - report.bands().subList(0, (int) (bands - 1)).stream().mapToLong(Long::longValue).sum());
             long end = System.currentTimeMillis();
             System.out.println(end - start);
+
+            eventLoop.close();
         });
     }
 }
