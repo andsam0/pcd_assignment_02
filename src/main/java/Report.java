@@ -1,5 +1,4 @@
 import java.util.List;
-import java.util.OptionalInt;
 
 public interface Report {
 
@@ -7,5 +6,5 @@ public interface Report {
 
     long numFiles();
 
-    void incrementNumberOfFiles(OptionalInt bandNumber);
+    void incrementNumberOfFiles(int bandNumber);
 }

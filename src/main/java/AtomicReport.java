@@ -1,5 +1,4 @@
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class AtomicReport implements Report {
@@ -7,8 +6,8 @@ public class AtomicReport implements Report {
     private final AtomicLong numberOfFile;
 
     public AtomicReport(int numberOfBands) {
-        AtomicLong[] temp = new AtomicLong[numberOfBands];
-        for (int i = 0; i < numberOfBands; i++) {
+        AtomicLong[] temp = new AtomicLong[numberOfBands+1];
+        for (int i = 0; i < numberOfBands+1; i++) {
             temp[i] = new AtomicLong();
         }
         bands = List.of(temp);
@@ -26,8 +25,8 @@ public class AtomicReport implements Report {
     }
 
     @Override
-    public void incrementNumberOfFiles(OptionalInt bandNumber){
+    public void incrementNumberOfFiles(int bandNumber){
         numberOfFile.incrementAndGet();
-        bandNumber.ifPresent(i -> bands.get(i).incrementAndGet());
+        bands.get(bandNumber).incrementAndGet();
     }
 }
