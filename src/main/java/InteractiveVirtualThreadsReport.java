@@ -1,54 +1,41 @@
-import javax.swing.*;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-public class InteractiveVirtualThreadsReport implements AsyncReportCalculator {
+public class InteractiveVirtualThreadsReport {
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private Report report;
     private long maxFS;
     private int bands;
-    private Phaser phaser;
-    private ExecutorService executor;
+    private final Phaser phaser;
+    private final ExecutorService executor;
+    private ReportController controller;
 
-    @Override
-    public Future<Report> getFSReport(String directory, long maxFS, int bands) {
+    public InteractiveVirtualThreadsReport() {
+        this.executor = Executors.newVirtualThreadPerTaskExecutor();
+        this.phaser = new Phaser(1);
+    }
+    public void setController(ReportController controller){
+        this.controller = controller;
+    }
+    public void start(String directory, long maxFS, int bands) {
         this.report = new AtomicReport(bands);
         this.maxFS = maxFS;
         this.bands = bands;
-        this.executor = Executors.newVirtualThreadPerTaskExecutor();
-        this.phaser = new Phaser(1);
-
-        final ReportView reportView = new ReportView(this, maxFS, bands);
-        reportView.setVisible(true);
-
-        Thread viewUpdater = Thread.ofVirtual().start(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    Thread.sleep(10);
-                    SwingUtilities.invokeLater(reportView::onUpdate);
-                }
-            } catch (InterruptedException _) {
-            }
-        });
+        this.stopped.set(false);
 
         Path path = Path.of(directory);
         submit(() -> calculateSize(path));
 
-        return executor.submit(() -> {
+        executor.submit(() -> {
             phaser.awaitAdvance(phaser.arrive());
-            viewUpdater.interrupt();
-            viewUpdater.join();
-            if (stopped.get()) SwingUtilities.invokeLater(reportView::onStop);
-            else SwingUtilities.invokeLater(reportView::onComplete);
-            return report;
+            if (!stopped.get()) controller.completed();
         });
     }
 
