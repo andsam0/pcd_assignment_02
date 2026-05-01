@@ -9,7 +9,7 @@ public class VirtualThreadsExample {
         long start = System.currentTimeMillis();
 
         Report report;
-        VirtualThreadsReport virtualThreadsReport = new VirtualThreadsReport();
+        AsyncReportCalculator virtualThreadsReport = new InteractiveVirtualThreadsReport();
         try {
             report = virtualThreadsReport.getFSReport(directory, maxFS, (int)bands).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -24,7 +24,7 @@ public class VirtualThreadsExample {
                     i, lo, hi, report.numFilesPerBand().get(i));
         }
         System.out.printf("Overflow (>= %d): %d files%n",
-                maxFS, report.numFiles() - report.numFilesPerBand().subList(0, (int) ( bands -1)).stream().mapToLong(Long::longValue).sum());
+                maxFS, report.numFilesPerBand().get((int) bands));
         long end = System.currentTimeMillis();
         System.out.println(end-start);
     }
