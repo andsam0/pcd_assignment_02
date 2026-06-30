@@ -9,7 +9,7 @@ public class VirtualThreadsExample {
         long start = System.currentTimeMillis();
 
         Report report;
-        AsyncReportCalculator virtualThreadsReport = new VirtualThreadsReport();
+        AsyncReportCalculator virtualThreadsReport = new InteractiveVirtualThreadsReport();
         try {
             report = virtualThreadsReport.getFSReport(directory, maxFS, (int)bands).get();
         } catch (InterruptedException | ExecutionException e) {

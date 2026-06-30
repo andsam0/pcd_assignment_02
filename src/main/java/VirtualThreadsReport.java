@@ -33,6 +33,17 @@ public class VirtualThreadsReport implements AsyncReportCalculator{
         });
     }
 
+    private void submit(Runnable action) {
+        phaser.register(); // must be done before creating the new child
+        executor.submit(() -> {
+            try {
+                action.run();
+            } finally {
+                phaser.arriveAndDeregister();
+            }
+        });
+    }
+
     private void calculateSize(Path path) {
         try (Stream<Path> stream = Files.list(path)) {
             stream
@@ -53,16 +64,7 @@ public class VirtualThreadsReport implements AsyncReportCalculator{
         }
     }
 
-    private void submit(Runnable action) {
-        phaser.register(); // must be done before creating the new child
-        executor.submit(() -> {
-            try {
-                action.run();
-            } finally {
-                phaser.arriveAndDeregister();
-            }
-        });
-    }
+
 
     private int bandIndex(long size, long maxFS, int NB) {
         if (size >= maxFS) return NB;

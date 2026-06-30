@@ -4,7 +4,7 @@ public interface Report {
 
     List<Long> numFilesPerBand();
 
-    long numFiles();
+    Long numFiles();
 
     void incrementNumberOfFiles(int bandNumber);
 }

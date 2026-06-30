@@ -1,32 +1,28 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class AtomicReport implements Report {
-    private final List<AtomicLong> bands;
-    private final AtomicLong numberOfFile;
+    private final List<Long> bands;
+    private Long numberOfFile = 0L;
 
     public AtomicReport(int numberOfBands) {
-        AtomicLong[] temp = new AtomicLong[numberOfBands+1];
-        for (int i = 0; i < numberOfBands+1; i++) {
-            temp[i] = new AtomicLong();
-        }
-        bands = List.of(temp);
-        numberOfFile = new AtomicLong();
+        bands = new ArrayList<>(Collections.nCopies(numberOfBands+1, 0L));
     }
 
     @Override
-    public List<Long> numFilesPerBand(){
-        return bands.stream().map(AtomicLong::get).toList();
+    public synchronized List<Long> numFilesPerBand(){
+        return bands;
     }
 
     @Override
-    public long numFiles() {
-        return numberOfFile.get();
+    public synchronized Long numFiles() {
+        return numberOfFile;
     }
 
     @Override
-    public void incrementNumberOfFiles(int bandNumber){
-        numberOfFile.incrementAndGet();
-        bands.get(bandNumber).incrementAndGet();
+    public synchronized void incrementNumberOfFiles(int bandNumber){
+        numberOfFile++;
+        bands.set(bandNumber, bands.get(bandNumber)+1);
     }
 }

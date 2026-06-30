@@ -17,39 +17,13 @@ public class InteractiveVirtualThreadsReport implements AsyncReportCalculator {
     private int bands;
     private Phaser phaser;
     private ExecutorService executor;
+    private ReportView reportView;
 
     @Override
     public Future<Report> getFSReport(String directory, long maxFS, int bands) {
-        this.report = new AtomicReport(bands);
-        this.maxFS = maxFS;
-        this.bands = bands;
-        this.executor = Executors.newVirtualThreadPerTaskExecutor();
-        this.phaser = new Phaser(1);
-
-        final ReportView reportView = new ReportView(this, maxFS, bands);
+        this.reportView = new ReportView(this, maxFS, bands, directory);
         reportView.setVisible(true);
-
-        Thread viewUpdater = Thread.ofVirtual().start(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    Thread.sleep(10);
-                    SwingUtilities.invokeLater(reportView::onUpdate);
-                }
-            } catch (InterruptedException _) {
-            }
-        });
-
-        Path path = Path.of(directory);
-        submit(() -> calculateSize(path));
-
-        return executor.submit(() -> {
-            phaser.awaitAdvance(phaser.arrive());
-            viewUpdater.interrupt();
-            viewUpdater.join();
-            if (stopped.get()) SwingUtilities.invokeLater(reportView::onStop);
-            else SwingUtilities.invokeLater(reportView::onComplete);
-            return report;
-        });
+        return start(directory, maxFS, bands);
     }
 
     private void calculateSize(Path path) {
@@ -102,6 +76,36 @@ public class InteractiveVirtualThreadsReport implements AsyncReportCalculator {
 
     public void stop() {
         this.stopped.set(true);
+    }
+
+    public Future<Report> start(String directory, long maxFS, int bands) {
+        this.report = new AtomicReport(bands);
+        this.maxFS = maxFS;
+        this.bands = bands;
+        this.executor = Executors.newVirtualThreadPerTaskExecutor();
+        this.phaser = new Phaser(1);
+        this.stopped.set(false);
+        Path path = Path.of(directory);
+        submit(() -> calculateSize(path));
+
+        Thread viewUpdater = Thread.ofVirtual().start(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    Thread.sleep(10);
+                    SwingUtilities.invokeLater(reportView::onUpdate);
+                }
+            } catch (InterruptedException _) {
+            }
+        });
+
+        return executor.submit(() -> {
+            phaser.awaitAdvance(phaser.arrive());
+            viewUpdater.interrupt();
+            viewUpdater.join();
+            if (stopped.get()) SwingUtilities.invokeLater(reportView::onStop);
+            else SwingUtilities.invokeLater(reportView::onComplete);
+            return report;
+        });
     }
 
     public Report getReport() {
