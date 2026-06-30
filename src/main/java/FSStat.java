@@ -16,18 +16,17 @@ public class FSStat {
     public Single<ReportResult> getFSReport(File dir, long maxFS, int NB) {
         return walkFiles(dir)
                 .subscribeOn(this.scheduler)
-                .map(file -> bandIndex(file.length(), maxFS, NB))
+                .map(fileLength -> bandIndex(fileLength, maxFS, NB))
                 .collect(
                         () -> new ArrayList<>(Collections.nCopies(NB + 1, 0L)),
                         (list, idx) -> list.set(idx, list.get(idx) + 1)
                 ).map(bands -> new ReportResult(bands.stream().mapToLong(Long::longValue).sum(), bands));
     }
 
-    private Observable<File> walkFiles(File entry) {
-//        System.out.println(Thread.currentThread().getName());
+    private Observable<Long> walkFiles(File entry) {
         if (Files.isSymbolicLink(entry.toPath())) return Observable.empty();
         if (entry.isFile()) {
-            return Observable.just(entry);
+            return Observable.just(entry.length());
         }
         File[] children = entry.listFiles();
         if (children == null)
