@@ -54,7 +54,7 @@ In questa soluzione abbiamo delegato la computazione a dei thread virtuali, crea
 ```java
 ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 ```
-Qui dobbiamo assicurarci noi che il risultato venga restituito solo quando tutti i thread virtuali creati abbiamo finito la computazione. Per fare questo abbiamo utilizzato un phaser: una barriera riutilizzabile e più flessibile in quanto permette di aspettare un numero dinamico (e non noto alla creazione) di parties.
+Qui dobbiamo assicurarci noi che il risultato venga restituito solo quando tutti i thread virtuali creati abbiano finito la computazione. Per fare questo abbiamo utilizzato un phaser: una barriera riutilizzabile e più flessibile in quanto permette di aspettare un numero dinamico (e non noto alla creazione) di parties.
 
 ```java
 
@@ -81,11 +81,11 @@ private void submit(Runnable action) {
 		});
 }
 ```
-Tramite il metodo `calculateSize(Path path)`, aggiorniamo il monitor condiviso `Report`, che tiene traccia del numero totale di file e delle varie bande. Questo metodo viene chiamato ricorsivamente sulle sottocartelle se il path in input è una cartella
+Tramite il metodo `calculateSize(Path path)`, aggiorniamo il monitor condiviso `Report`, che tiene traccia del numero totale di file e delle varie bande. Questo metodo viene chiamato ricorsivamente sulle sottocartelle se il path in input è una cartella.
 
 = Punto opzionale: interfaccia utente interattiva
 
-Abbiamo progettato l'interfaccia per la soluzione che sfrutta i thread virtuali. Viene mostrato in tempo reale l'aggionamento del totale del numero di file esplorati e il numero di file per ogni banda. Tramite il pulstante `Stop` è possibile fermare la computazione anche prima del suo naturale completamento. Poi, possiamo iniziare una nuova computazione (volendo anche su nuovi parametri acquisiti tramite i `TextField`) utilizzando il pulsante `Start`. Gli asterischi danno un'idea grafica della distribuzione della dimensione dei file nella cartella.
+Abbiamo progettato l'interfaccia per la soluzione che sfrutta i thread virtuali. Viene mostrato in tempo reale l'aggionamento del numero di file esplorati e del numero di file per ogni banda. Tramite il pulstante `Stop` è possibile fermare la computazione anche prima del suo naturale completamento. Poi, possiamo iniziare una nuova computazione (volendo anche su nuovi parametri acquisiti tramite i `TextField`) utilizzando il pulsante `Start`. Gli asterischi danno un'idea grafica della distribuzione della dimensione dei file nella cartella.
 
 #figure(
   image("gui.png"),
